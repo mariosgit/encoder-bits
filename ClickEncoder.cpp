@@ -43,23 +43,18 @@
 
 // ----------------------------------------------------------------------------
 
-ClickEncoder::ClickEncoder(uint8_t A, uint8_t B, uint8_t BTN, uint8_t stepsPerNotch, bool coderActive, bool btnActive)
+ClickEncoder::ClickEncoder(volatile uint8_t *address, uint8_t maskA, uint8_t maskB, uint8_t maskBTN, uint8_t stepsPerNotch, bool coderActive, bool btnActive)
   : doubleClickEnabled(true), accelerationEnabled(true),
     delta(0), last(0), acceleration(0),
     button(Open), steps(stepsPerNotch),
-    pinA(A), pinB(B), pinBTN(BTN), coderPinsActive(coderActive), btnPinActive(btnActive)
+    address(address),
+    maskA(maskA), maskB(maskB), maskBTN(maskBTN), coderPinsActive(coderActive), btnPinActive(btnActive)
 {
-  uint8_t coderType = (coderPinsActive == LOW) ? INPUT_PULLUP : INPUT;
-  pinMode(pinA, coderType);
-  pinMode(pinB, coderType);
-  uint8_t btnType = (btnPinActive == LOW) ? INPUT_PULLUP : INPUT;
-  pinMode(pinBTN, btnType);
-
-  if (digitalRead(pinA) == coderPinsActive) {
+  if ( ((*address) & maskA) == coderActive ) { // (digitalRead(pinA) == coderPinsActive) {
     last = 3;
   }
 
-  if (digitalRead(pinB) == coderPinsActive) {
+  if ( ((*address) & maskB) == coderPinsActive) {
     last ^=1;
   }
 }
@@ -82,11 +77,11 @@ void ClickEncoder::service(void)
 #if ENC_DECODER == ENC_FLAKY
   last = (last << 2) & 0x0F;
 
-  if (digitalRead(pinA) == coderPinsActive) {
+  if (((*address) & maskA) == coderPinsActive) {
     last |= 2;
   }
 
-  if (digitalRead(pinB) == coderPinsActive) {
+  if (((*address) & maskB) == coderPinsActive) {
     last |= 1;
   }
 
@@ -98,11 +93,11 @@ void ClickEncoder::service(void)
 #elif ENC_DECODER == ENC_NORMAL
   int8_t curr = 0;
 
-  if (digitalRead(pinA) == coderPinsActive) {
+  if (((*address) & maskA) == coderPinsActive) {
     curr = 3;
   }
 
-  if (digitalRead(pinB) == coderPinsActive) {
+  if (((*address) & maskB) == coderPinsActive) {
     curr ^= 1;
   }
 
@@ -127,19 +122,19 @@ void ClickEncoder::service(void)
   // handle button
   //
 #ifndef WITHOUT_BUTTON
-  if (pinBTN > -1 // check button only, if a pin has been provided
+  if (maskBTN > -1 // check button only, if a pin has been provided
       && (now - lastButtonCheck) >= ENC_BUTTONINTERVAL) // checking button is sufficient every 10-30ms
   {
     lastButtonCheck = now;
 
-    if (digitalRead(pinBTN) == btnPinActive) { // key is down
+    if (((*address) & maskBTN) == btnPinActive) { // key is down
       keyDownTicks++;
       if (keyDownTicks > (ENC_HOLDTIME / ENC_BUTTONINTERVAL)) {
         button = Held;
       }
     }
 
-    if (digitalRead(pinBTN) == !btnPinActive) { // key is now up
+    if (((*address) & maskBTN) == !btnPinActive) { // key is now up
       if (keyDownTicks /*> ENC_BUTTONINTERVAL*/) {
         if (button == Held) {
           button = Released;
