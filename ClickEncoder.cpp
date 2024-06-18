@@ -15,8 +15,8 @@
 // Button configuration (values for 1ms timer service calls)
 //
 #define ENC_BUTTONINTERVAL    10  // check button every x milliseconds, also debouce time
-#define ENC_DOUBLECLICKTIME  600  // second click within 600ms
-#define ENC_HOLDTIME        1200  // report held button after 1.2s
+#define ENC_DOUBLECLICKTIME  400  // second click within 600ms
+#define ENC_HOLDTIME         800  // report held button after 1.2s
 
 // ----------------------------------------------------------------------------
 // Acceleration configuration (for 1000Hz calls to ::service())
@@ -50,11 +50,11 @@ ClickEncoder::ClickEncoder(volatile uint8_t *address, uint8_t maskA, uint8_t mas
     address(address),
     maskA(maskA), maskB(maskB), maskBTN(maskBTN), coderPinsActive(coderActive), btnPinActive(btnActive)
 {
-  if ( ((*address) & maskA) == coderActive ) { // (digitalRead(pinA) == coderPinsActive) {
+  if ( ((*address) & maskA) ) { //?true:false == coderPinsActive ) { // (digitalRead(pinA) == coderPinsActive) {
     last = 3;
   }
 
-  if ( ((*address) & maskB) == coderPinsActive) {
+  if ( ((*address) & maskB)  ) { //?true:false == coderPinsActive) {
     last ^=1;
   }
 }
@@ -77,11 +77,11 @@ void ClickEncoder::service(void)
 #if ENC_DECODER == ENC_FLAKY
   last = (last << 2) & 0x0F;
 
-  if (((*address) & maskA) == coderPinsActive) {
+  if (((*address) & maskA)  ) { //?true:false == coderPinsActive) {
     last |= 2;
   }
 
-  if (((*address) & maskB) == coderPinsActive) {
+  if (((*address) & maskB)  ) { //?true:false == coderPinsActive) {
     last |= 1;
   }
 
@@ -93,11 +93,11 @@ void ClickEncoder::service(void)
 #elif ENC_DECODER == ENC_NORMAL
   int8_t curr = 0;
 
-  if (((*address) & maskA) == coderPinsActive) {
+  if (((*address) & maskA)    ) { //?true:false == coderPinsActive) {
     curr = 3;
   }
 
-  if (((*address) & maskB) == coderPinsActive) {
+  if (((*address) & maskB)    ) { //?true:false == coderPinsActive) {
     curr ^= 1;
   }
 
@@ -127,14 +127,14 @@ void ClickEncoder::service(void)
   {
     lastButtonCheck = now;
 
-    if (((*address) & maskBTN) == btnPinActive) { // key is down
+    if (((*address) & maskBTN)  ){ //?true:false == btnPinActive) { // key is down
       keyDownTicks++;
       if (keyDownTicks > (ENC_HOLDTIME / ENC_BUTTONINTERVAL)) {
         button = Held;
       }
     }
 
-    if (((*address) & maskBTN) == !btnPinActive) { // key is now up
+    if (((*address) & maskBTN) == 0 ){ //?true:false == !btnPinActive) { // key is now up
       if (keyDownTicks /*> ENC_BUTTONINTERVAL*/) {
         if (button == Held) {
           button = Released;
