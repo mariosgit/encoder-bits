@@ -56,7 +56,7 @@ public:
   } Button;
 
 public:
-  ClickEncoder(volatile uint8_t *address, uint8_t maskA, uint8_t maskB, uint8_t maskBTN = -1,
+  ClickEncoder(volatile uint32_t *address, uint32_t maskA, uint32_t maskB, uint32_t maskBTN = -1,
                uint8_t stepsPerNotch = 1, bool coderActive = LOW, bool btnActive = LOW);
 
   void service(void);
@@ -95,10 +95,10 @@ public:
   }
 
 private:
-  const volatile uint8_t *address;
-  const uint8_t maskA;
-  const uint8_t maskB;
-  const uint8_t maskBTN;
+  const volatile uint32_t *address;
+  const uint32_t maskA;
+  const uint32_t maskB;
+  const uint32_t maskBTN;
   const bool coderPinsActive;
   const bool btnPinActive;
   volatile int16_t delta;

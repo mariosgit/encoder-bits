@@ -43,7 +43,7 @@
 
 // ----------------------------------------------------------------------------
 
-ClickEncoder::ClickEncoder(volatile uint8_t *address, uint8_t maskA, uint8_t maskB, uint8_t maskBTN, uint8_t stepsPerNotch, bool coderActive, bool btnActive)
+ClickEncoder::ClickEncoder(volatile uint32_t *address, uint32_t maskA, uint32_t maskB, uint32_t maskBTN, uint8_t stepsPerNotch, bool coderActive, bool btnActive)
   : doubleClickEnabled(true), accelerationEnabled(true),
     delta(0), last(0), acceleration(0),
     button(Open), steps(stepsPerNotch),
@@ -122,7 +122,7 @@ void ClickEncoder::service(void)
   // handle button
   //
 #ifndef WITHOUT_BUTTON
-  if (maskBTN > -1 // check button only, if a pin has been provided
+  if (maskBTN != 0 // check button only, if a pin has been provided
       && (now - lastButtonCheck) >= ENC_BUTTONINTERVAL) // checking button is sufficient every 10-30ms
   {
     lastButtonCheck = now;
