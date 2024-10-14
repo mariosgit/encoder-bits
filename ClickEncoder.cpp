@@ -174,14 +174,14 @@ int16_t ClickEncoder::getValue(void)
 {
   int16_t val;
 
-  cli();
+  // cli();
   val = delta;
 
   if (steps == 2) delta = val & 1;
   else if (steps == 4) delta = val & 3;
   else delta = 0; // default to 1 step per notch
 
-  sei();
+  // sei();
 
   if (steps == 4) val >>= 2;
   if (steps == 2) val >>= 1;
